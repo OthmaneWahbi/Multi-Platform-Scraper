@@ -900,11 +900,7 @@ class ScraperCLI {
         }
     }
 
-    async scrape(url, proxyLocation = null, opts={}) {
-        // If Render has downloaded Chrome for Puppeteer, point to it:
-          if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-            launchOpts.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
-          }
+    async scrape(url, proxyLocation = null, launchOpts={}) {
         if (opts.headless !== undefined) CONFIG.HEADLESS = opts.headless;
         if (opts.batchSize !== undefined) CONFIG.BATCH_SIZE = opts.batchSize;
         console.log(`\n${'='.repeat(70)}`);
