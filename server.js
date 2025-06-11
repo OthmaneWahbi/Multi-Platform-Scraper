@@ -23,5 +23,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`GUI running at http://localhost:${PORT}`);
   // open browser on start (no electron)
-  open(`http://localhost:${PORT}`);
 });
