@@ -839,18 +839,22 @@ class ScraperCLI {
         this.page = null;
     }
 
-    async initialize(proxyLocation = null) {
+    async initialize(proxyLocation = null,opts={}) {
         console.log('🚀 Initializing browser...');
-        this.browser = await puppeteer.launch({
+        // Build your launch options
+          const launchOpts = {
             headless: CONFIG.HEADLESS,
             args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-accelerated-2d-canvas',
-                '--disable-gpu'
-            ]
-        });
+              '--no-sandbox',
+              '--disable-setuid-sandbox',
+              '--disable-dev-shm-usage',
+            ],
+          };
+          // If Render has downloaded Chrome for Puppeteer, point to it:
+          if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+            launchOpts.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+          }
+        this.browser = await puppeteer.launch(launchOpts);
         // Prepare options for the injector
         const injectorOptions = {
             // Let the library generate a fingerprint based on these constraints
