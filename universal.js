@@ -900,7 +900,7 @@ class ScraperCLI {
         }
     }
 
-    async scrape(url, proxyLocation = null, launchOpts={}) {
+    async scrape(url, proxyLocation = null, opts={}) {
         if (opts.headless !== undefined) CONFIG.HEADLESS = opts.headless;
         if (opts.batchSize !== undefined) CONFIG.BATCH_SIZE = opts.batchSize;
         console.log(`\n${'='.repeat(70)}`);
