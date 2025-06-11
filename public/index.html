@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Universal Scraper</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    .hidden { display:none; }
+    input, button { font-size:1rem; padding:0.5em; }
+    #results { margin-top:1em; white-space:pre-wrap; background:#f0f0f0; padding:1em; height:300px; overflow:auto; }
+  </style>
+</head>
+<body>
+  <h1>Store Scraper</h1>
+  <div>
+    <label><input type="radio" name="mode" value="basic" checked>Basic</label>
+    <label><input type="radio" name="mode" value="advanced">Advanced</label>
+  </div>
+  <div id="basic">
+    <input id="url" placeholder="enter store URL" size="50">
+    <button id="runBasic">Go</button>
+  </div>
+  <div id="advanced" class="hidden">
+    <input id="urlAdv" placeholder="enter store URL" size="50"><br>
+    <label><input id="headless" type="checkbox">Headless</label><br>
+    <label>Batch Size: <input id="batch" type="number" value="100"></label><br>
+    <button id="runAdv">Go (Advanced)</button>
+  </div>
+  <pre id="results"></pre>
+  <script>
+    const switchMode = () => {
+      const basic = document.getElementById('basic');
+      document.getElementById('advanced').classList.toggle('hidden', !document.querySelector('[name=mode]:checked').value==='advanced');
+      basic.classList.toggle('hidden', document.querySelector('[name=mode]:checked').value==='advanced');
+    };
+    document.querySelectorAll('[name=mode]').forEach(i=>i.addEventListener('change',switchMode));
+    
+    const run = async (url, opts={}) => {
+      const res = await fetch('/scrape', {
+        method:'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({url,opts})
+      });
+      return res.json();
+    };
+
+    document.getElementById('runBasic').onclick = async () => {
+      const url = document.getElementById('url').value;
+      document.getElementById('results').textContent = '…scraping…';
+      document.getElementById('results').textContent = JSON.stringify(await run(url),null,2);
+    };
+    document.getElementById('runAdv').onclick = async () => {
+      const url = document.getElementById('urlAdv').value;
+      const opts = {
+        headless: document.getElementById('headless').checked,
+        batchSize: parseInt(document.getElementById('batch').value,10)
+      };
+      document.getElementById('results').textContent = '…scraping (adv)…';
+      document.getElementById('results').textContent = JSON.stringify(await run(url, opts),null,2);
+    };
+  </script>
+</body>
+</html>
