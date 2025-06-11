@@ -15,6 +15,7 @@ const path =require('path');
 const { parse } = require('json2csv');
 const countryReverseGeocoding = require('country-reverse-geocoding').country_reverse_geocoding();
 const { newInjectedPage } = require('fingerprint-injector');
+const { createBrowserFetcher } = require('puppeteer-core'); // BrowserFetcher API
 
 // Apply stealth plugin to puppeteer
 puppeteer.use(StealthPlugin());
@@ -841,20 +842,27 @@ class ScraperCLI {
 
     async initialize(proxyLocation = null,opts={}) {
         console.log('🚀 Initializing browser...');
-        // Build your launch options
-          const launchOpts = {
-            headless: CONFIG.HEADLESS,
-            args: [
-              '--no-sandbox',
-              '--disable-setuid-sandbox',
-              '--disable-dev-shm-usage',
-            ],
-          };
-          // If Render has downloaded Chrome for Puppeteer, point to it:
-          if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-            launchOpts.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+        // 1) Ensure the binary is downloaded
+          const cacheDir = process.env.PUPPETEER_CACHE_DIR || '/opt/render/.cache/puppeteer';
+          const fetcher = createBrowserFetcher({ path: cacheDir });
+          
+          // Use the same revision that puppeteer-core expects by default
+          const revision = require('puppeteer-core/package.json').puppeteer.chromium_revision;
+          let revisionInfo = fetcher.revisionInfo(revision);
+        
+          // Download if not present
+          if (!revisionInfo.local) {
+            console.log(`Downloading Chromium r${revision}…`);
+            revisionInfo = await fetcher.download(revision);
+            console.log(`Chromium downloaded to ${revisionInfo.folderPath}`);
           }
-        this.browser = await puppeteer.launch(launchOpts);
+        
+          // 2) Launch with that executable
+          this.browser = await puppeteer.launch({
+            headless: CONFIG.HEADLESS,
+            executablePath: revisionInfo.executablePath,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+          });
         // Prepare options for the injector
         const injectorOptions = {
             // Let the library generate a fingerprint based on these constraints
