@@ -1,0 +1,30 @@
+name: Build Multi-Platform Scraper
+
+on: [push, pull_request]
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with: { node-version: '18' }
+      - run: npm ci
+      - run: npx pkg . --targets node18-win-x64 --output dist/scraper-gui.exe
+      - uses: actions/upload-artifact@v3
+        with:
+          name: windows-exe
+          path: dist/scraper-gui.exe
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with: { node-version: '18' }
+      - run: npm ci
+      - run: npx pkg . --targets node18-macos-x64 --output dist/scraper-gui
+      - uses: actions/upload-artifact@v3
+        with:
+          name: macos-bin
+          path: dist/scraper-gui
